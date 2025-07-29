@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Auth {
+	id					Int					@id @default(autoincrement())
+	uid					Int					@unique
+	provider			String
+	acToken				String
+	reToken				String
+}
+
+model User {
+	id					Int					@id @default(autoincrement())
+	password			String?
+	name				String
+	info				String
+	userImgURL			String
+	email				String				@unique
+	createdAt			DateTime			@default(now())
+	
+	artist				Artist?
+	
+	followArtists		UserFollowArtist[]
+	blockArtists		UserBlockArtist[]
+	blockedByArtists	ArtistBlockUser[]
+	artistMemberships	ArtistMember[]
+	reports				Report[]
+}
+
+model Artist {
+	id					Int					@id @default(autoincrement())
+	userId				Int					@unique
+	user				User				@relation(fields: [userId], references: [id])
+
+	artistName			String
+	artistInfo			String
+	artistImgURL		String
+
+	genres				String
+
+	followers			UserFollowArtist[]
+	blockedUsers		ArtistBlockUser[]
+	blockingUsers		UserBlockArtist[]	@relation(name: "UserBlocksArtist")
+	members				ArtistMember[]
+	buskings			Busking[]
+	reports				Report[]
+
+	youtubeURL			String
+	instarURL			String
+	soundURL			String
+	otherURL			String
+}
+
+model Busking {
+	id					Int					@id @default(autoincrement())
+	artistId			Int
+	artist				Artist				@relation(fields: [artistId], references: [id])
+
+	buskingName			String
+	buskingInfo			String
+
+	startTime			DateTime
+	endTime				DateTime
+
+	latitude			Float
+	longitude			Float
+}
+
+model Report {
+	id					Int					@id @default(autoincrement())
+	userId				Int
+	artistId			Int
+
+	user				User				@relation(fields: [userId], references: [id])
+	artist				Artist				@relation(fields: [artistId], references: [id])
+
+	reportType			Int
+	report				String
+}
+
+model UserFollowArtist {
+	userId				Int
+	artistId			Int
+
+	user				User				@relation(fields: [userId], references: [id])
+	artist				Artist				@relation(fields: [artistId], references: [id])
+
+	@@id([userId, artistId])
+}
+
+model UserBlockArtist {
+	userId				Int
+	artistId			Int
+
+	user				User				@relation(fields: [userId], references: [id])
+	artist				Artist				@relation(name: "UserBlocksArtist", fields: [artistId], references: [id])
+
+	@@id([userId, artistId])
+}
+
+model ArtistBlockUser {
+	artistId			Int
+	userId				Int
+
+	artist				Artist				@relation(fields: [artistId], references: [id])
+	user				User				@relation(fields: [userId], references: [id])
+
+	@@id([artistId, userId])
+}
+
+model ArtistMember {
+	artistId			Int
+	userId				Int
+
+	artist				Artist				@relation(fields: [artistId], references: [id])
+	user				User				@relation(fields: [userId], references: [id])
+
+	@@id([artistId, userId])
+}
