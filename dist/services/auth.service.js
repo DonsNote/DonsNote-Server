@@ -10,19 +10,26 @@ const jwt_1 = require("../utils/jwt");
 const prisma = new client_1.PrismaClient();
 exports.authService = {
     async handleLocalSignup(data) {
+        if (!data.email || !data.password) {
+            throw new Error('Email, password required.');
+        }
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?]).{8,}$/;
+        if (!data.password.match(passwordRegex)) {
+            throw new Error('Password invalid.');
+        }
         const existingUser = await prisma.user.findUnique({
             where: { email: data.email },
         });
         if (existingUser) {
-            throw new Error('User already exists');
+            throw new Error('Email already exists');
         }
         const hashedPassword = await bcrypt_1.default.hash(data.password, 10);
         const user = await prisma.user.create({
             data: {
-                name: data.name,
+                name: data.name ?? 'Default',
                 email: data.email,
                 password: hashedPassword,
-                info: data.info ?? '',
+                info: data.info ?? 'Input your info.',
                 userImgURL: data.userImgURL ?? '',
             },
         });
@@ -35,9 +42,13 @@ exports.authService = {
         };
     },
     async handleAppleSignup(data) {
-        return { message: 'Support not yet' };
+        return {
+            message: 'Support not yet'
+        };
     },
     async handleGoogleSignup(data) {
-        return { message: 'Support not yet' };
+        return {
+            message: 'Support not yet'
+        };
     },
 };
