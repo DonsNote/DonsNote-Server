@@ -7,26 +7,32 @@ const prisma = new PrismaClient();
 
 export const authService = {
 	async handleLocalSignup(data: LocalSignupDTO) {
-		if (!data.email || !data.password || data.name) {
-			throw new Error('Email, password, and name are required.');
+		if (!data.email || !data.password) {
+			throw new Error('Email, password required.');
 		}
-		
+
+		const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?]).{8,}$/;
+
+		if (!data.password.match(passwordRegex)) {
+			throw new Error('Password invalid.');
+		}
+
 		const existingUser = await prisma.user.findUnique({
 			where: { email: data.email },
 		});
 
 		if (existingUser) {
-			throw new Error('User already exists');
+			throw new Error('Email already exists');
 		}
 
 		const hashedPassword = await bcrypt.hash(data.password, 10);
 
 		const user = await prisma.user.create({
 			data: {
-				name: data.name,
+				name: data.name ?? 'Default',
 				email: data.email,
 				password: hashedPassword,
-				info: data.info ?? '',
+				info: data.info ?? 'Input your info.',
 				userImgURL: data.userImgURL ?? '',
 			},
 		});
@@ -42,10 +48,14 @@ export const authService = {
 	},
 
 	async handleAppleSignup(data: AppleSignupDTO) {
-		return { message: 'Support not yet' };
+		return {
+			message: 'Support not yet'
+		};
 	},
 
 	async handleGoogleSignup(data: GoogleSignupDTO) {
-		return { message: 'Support not yet' };
+		return {
+			message: 'Support not yet'
+		};
 	},
 };

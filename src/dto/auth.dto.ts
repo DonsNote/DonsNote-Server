@@ -1,5 +1,4 @@
 
-
 export interface LocalSignupDTO {
 	name: string;
 	email: string;

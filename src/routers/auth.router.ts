@@ -4,13 +4,9 @@ import { authController } from "../controllers/auth.controller";
 const router = Router();
 
 
+/* -- POST -- */
 
-// GET
-router.get('/', async (req, res) => {
-    res.json({ message: 'comming' });
-});
-
-// POST
+/* Signup */
 router.post('/', authController.handleAuth);
 
 export default router;
